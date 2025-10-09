@@ -18,9 +18,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Definir el administrador y turista
-const ADMIN_EMAIL = "maurer.sergio@gmail.com"; // CAMBIA ESTO por tu email de admin
-const TOURIST_MODE = "tourist"; // Identificador para modo turista
+// UID del administrador general (DEBES CAMBIARLO POR TU UID REAL)
+// Para obtenerlo: Inicia sesión y ejecuta en consola: console.log(auth.currentUser.uid)
+const SUPER_ADMIN_UID = "unZtDSytjOXGpCB21jKeicWWkMG3"; 
+
+const TOURIST_MODE = "tourist";
 
 // Exportar para usar en otros archivos
-export { auth, db, ADMIN_EMAIL, TOURIST_MODE };
+export { auth, db, SUPER_ADMIN_UID, TOURIST_MODE };

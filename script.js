@@ -1,4 +1,4 @@
-import { auth, db, ADMIN_EMAIL, TOURIST_MODE } from './firebase-config.js';
+import { auth, db, SUPER_ADMIN_UID, TOURIST_MODE } from './firebase-config.js';
 import { 
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword,
@@ -17,6 +17,14 @@ import {
     getDoc
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+import { 
+    doc, 
+    setDoc, 
+    getDoc,
+    updateDoc,
+    deleteDoc
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
 // Configuración inicial
 const NUM_PHOTOS = 4;
 window.photos = [];  // ← Ahora es global
@@ -24,6 +32,41 @@ const photos = window.photos;  // ← Mantener referencia local
 let currentUser = null;
 let isAdmin = false;
 let isTourist = false;
+
+async function checkUserRole(userId) {
+    try {
+        // El super admin siempre es admin
+        if (userId === SUPER_ADMIN_UID) {
+            userRole = 'super_admin';
+            isAdmin = true;
+            return 'super_admin';
+        }
+
+        // Buscar en la colección de roles
+        const roleDoc = await getDoc(doc(db, 'user_roles', userId));
+        
+        if (roleDoc.exists()) {
+            userRole = roleDoc.data().role || 'user';
+            isAdmin = (userRole === 'admin' || userRole === 'super_admin');
+            return userRole;
+        } else {
+            // Si no existe, crear como usuario normal
+            await setDoc(doc(db, 'user_roles', userId), {
+                role: 'user',
+                email: auth.currentUser.email,
+                createdAt: Timestamp.now()
+            });
+            userRole = 'user';
+            isAdmin = false;
+            return 'user';
+        }
+    } catch (error) {
+        console.error('Error al verificar rol:', error);
+        userRole = 'user';
+        isAdmin = false;
+        return 'user';
+    }
+}
 
 // Parámetros que se califican
 const parameters = [
@@ -118,22 +161,22 @@ const parameters = [
 
 // ==================== AUTENTICACIÓN ====================
 
-window.register = async function() {
-    const email = document.getElementById('emailInput').value;
-    const password = document.getElementById('passwordInput').value;
+// window.register = async function() {
+//     const email = document.getElementById('emailInput').value;
+//     const password = document.getElementById('passwordInput').value;
     
-    if (!email || !password) {
-        alert('Por favor ingresa email y contraseña');
-        return;
-    }
+//     if (!email || !password) {
+//         alert('Por favor ingresa email y contraseña');
+//         return;
+//     }
     
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert('Cuenta creada exitosamente');
-    } catch (error) {
-        alert('Error al registrar: ' + error.message);
-    }
-}
+//     try {
+//         await createUserWithEmailAndPassword(auth, email, password);
+//         alert('Cuenta creada exitosamente');
+//     } catch (error) {
+//         alert('Error al registrar: ' + error.message);
+//     }
+// }
 
 window.login = async function() {
     const email = document.getElementById('emailInput').value;
@@ -180,26 +223,34 @@ window.enterAsTourist = function() {
 }
 
 // Observador de autenticación
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     // No sobrescribir si ya está en modo turista
     if (isTourist) return;
     
     currentUser = user;
     if (user) {
-        // Verificar si es administrador
-        isAdmin = user.email === ADMIN_EMAIL;
+        // Verificar rol del usuario
+        const role = await checkUserRole(user.uid);
         
         document.getElementById('authPanel').style.display = 'none';
         document.getElementById('mainPanel').style.display = 'block';
         
-        // Mostrar email con badge de admin si corresponde
+        // Mostrar email con badge según el rol
+        let badge = '';
+        if (role === 'super_admin') {
+            badge = '<span class="admin-badge super">SUPER ADMIN</span>';
+        } else if (role === 'admin') {
+            badge = '<span class="admin-badge">ADMIN</span>';
+        }
+        
+        document.getElementById('userEmail').innerHTML = `
+            <span>${user.email}</span>
+            ${badge}
+        `;
+        
+        // Mostrar botón de gestión de usuarios solo para admins
         if (isAdmin) {
-            document.getElementById('userEmail').innerHTML = `
-                <span>${user.email}</span>
-                <span style="background: #ec1c24; color: white; padding: 3px 8px; border-radius: 3px; font-size: 0.8em; margin-left: 10px;">ADMIN</span>
-            `;
-        } else {
-            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userManagementBtn').style.display = 'inline-block';
         }
         
         init();
@@ -207,8 +258,242 @@ onAuthStateChanged(auth, (user) => {
         document.getElementById('authPanel').style.display = 'block';
         document.getElementById('mainPanel').style.display = 'none';
         isAdmin = false;
+        userRole = 'user';
     }
 });
+
+// Toggle panel de gestión de usuarios
+window.toggleUserManagement = async function() {
+    const panel = document.getElementById('userManagementPanel');
+    
+    if (panel.classList.contains('collapsed')) {
+        panel.classList.remove('collapsed');
+        await loadUsers();
+        await loadInvitations();
+    } else {
+        panel.classList.add('collapsed');
+    }
+}
+
+// Cambiar entre tabs
+window.switchTab = function(tabName) {
+    // Desactivar todos los tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Activar tab seleccionado
+    if (tabName === 'users') {
+        document.querySelector('[onclick="switchTab(\'users\')"]').classList.add('active');
+        document.getElementById('tabUsers').style.display = 'block';
+    } else if (tabName === 'invitations') {
+        document.querySelector('[onclick="switchTab(\'invitations\')"]').classList.add('active');
+        document.getElementById('tabInvitations').style.display = 'block';
+    }
+}
+
+// Cargar lista de usuarios
+async function loadUsers() {
+    const usersList = document.getElementById('usersList');
+    usersList.innerHTML = '<div class="loading">Cargando usuarios...</div>';
+    
+    try {
+        const rolesSnapshot = await getDocs(collection(db, 'user_roles'));
+        
+        if (rolesSnapshot.empty) {
+            usersList.innerHTML = '<div class="loading">No hay usuarios registrados</div>';
+            return;
+        }
+        
+        const users = [];
+        rolesSnapshot.forEach(doc => {
+            users.push({
+                uid: doc.id,
+                ...doc.data()
+            });
+        });
+        
+        // Ordenar: super admin primero, luego admins, luego usuarios
+        users.sort((a, b) => {
+            const roleOrder = { super_admin: 0, admin: 1, user: 2 };
+            return roleOrder[a.role] - roleOrder[b.role];
+        });
+        
+        usersList.innerHTML = users.map(user => {
+            const isSuperAdmin = user.uid === SUPER_ADMIN_UID;
+            const canEdit = !isSuperAdmin || currentUser.uid === SUPER_ADMIN_UID;
+            
+            let roleBadge = '';
+            if (user.role === 'super_admin') {
+                roleBadge = '<span class="role-badge super">Super Admin</span>';
+            } else if (user.role === 'admin') {
+                roleBadge = '<span class="role-badge admin">Admin</span>';
+            } else {
+                roleBadge = '<span class="role-badge user">Usuario</span>';
+            }
+            
+            return `
+                <div class="user-item">
+                    <div class="user-info">
+                        <div class="user-email">${user.email}</div>
+                        ${roleBadge}
+                    </div>
+                    <div class="user-actions">
+                        ${canEdit ? `
+                            <select onchange="changeUserRole('${user.uid}', this.value)" ${!isAdmin ? 'disabled' : ''}>
+                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>Usuario</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                            ${!isSuperAdmin ? `<button onclick="deleteUserAccount('${user.uid}', '${user.email}')" class="delete-btn">🗑️</button>` : ''}
+                        ` : '<span style="color: #999; font-size: 0.85em;">No editable</span>'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        usersList.innerHTML = '<div class="loading">Error al cargar usuarios</div>';
+    }
+}
+
+// Cambiar rol de usuario
+window.changeUserRole = async function(userId, newRole) {
+    if (!isAdmin) {
+        alert('No tienes permisos para cambiar roles');
+        return;
+    }
+    
+    if (userId === SUPER_ADMIN_UID && currentUser.uid !== SUPER_ADMIN_UID) {
+        alert('No puedes cambiar el rol del Super Admin');
+        return;
+    }
+    
+    try {
+        await updateDoc(doc(db, 'user_roles', userId), {
+            role: newRole,
+            updatedAt: new Date()
+        });
+        
+        alert('Rol actualizado exitosamente');
+        await loadUsers();
+    } catch (error) {
+        console.error('Error al cambiar rol:', error);
+        alert('Error al cambiar rol: ' + error.message);
+    }
+}
+
+// Eliminar usuario
+window.deleteUserAccount = async function(userId, email) {
+    if (!isAdmin) {
+        alert('No tienes permisos para eliminar usuarios');
+        return;
+    }
+    
+    if (userId === SUPER_ADMIN_UID) {
+        alert('No puedes eliminar al Super Admin');
+        return;
+    }
+    
+    if (!confirm(`¿Estás seguro de eliminar a ${email}?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+    
+    try {
+        // Eliminar rol de Firestore
+        await deleteDoc(doc(db, 'user_roles', userId));
+        
+        // Eliminar invitaciones asociadas
+        const invitationsQuery = query(
+            collection(db, 'invitations'),
+            where('email', '==', email)
+        );
+        const invitationsSnapshot = await getDocs(invitationsQuery);
+        invitationsSnapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+        });
+        
+        alert('⚠️ Usuario eliminado de la base de datos.\n\nNOTA: El usuario aún puede iniciar sesión con su cuenta de Firebase Authentication. Para eliminarlo completamente, hazlo manualmente desde Firebase Console → Authentication.');
+        
+        await loadUsers();
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        alert('Error al eliminar usuario: ' + error.message);
+    }
+}
+
+// Generar contraseña aleatoria
+window.generatePassword = function() {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    document.getElementById('invitePassword').value = password;
+}
+
+// Crear invitación (crear usuario directamente)
+window.createInvitation = async function() {
+    if (!isAdmin) {
+        alert('No tienes permisos para crear usuarios');
+        return;
+    }
+    
+    const email = document.getElementById('inviteEmail').value.trim();
+    const password = document.getElementById('invitePassword').value;
+    const role = document.getElementById('inviteRole').value;
+    
+    if (!email || !password) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('La contraseña debe tener al menos 6 caracteres');
+        return;
+    }
+    
+    try {
+        // Crear usuario en Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const newUserId = userCredential.user.uid;
+        
+        // Guardar rol en Firestore
+        await setDoc(doc(db, 'user_roles', newUserId), {
+            role: role,
+            email: email,
+            createdBy: currentUser.uid,
+            createdAt: new Date()
+        });
+        
+        // Cerrar sesión del nuevo usuario y volver a loguear al admin
+        await signOut(auth);
+        
+        alert(`✅ Usuario creado exitosamente!\n\nEmail: ${email}\nContraseña: ${password}\n\nEnvía esta información al usuario de forma segura.`);
+        
+        // Volver a loguear al admin
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error al crear usuario:', error);
+        
+        if (error.code === 'auth/email-already-in-use') {
+            alert('Este email ya está registrado');
+        } else {
+            alert('Error al crear usuario: ' + error.message);
+        }
+    }
+}
+
+// Cargar invitaciones (para mostrar usuarios recién creados)
+async function loadInvitations() {
+    const invitationsList = document.getElementById('invitationsList');
+    invitationsList.innerHTML = '<div class="info-message">Los usuarios se crean directamente. No hay sistema de invitaciones pendientes.</div>';
+}
 
 window.logout = async function() {
     try {
@@ -1095,5 +1380,65 @@ function updateWeightsVisibility() {
         // Los usuarios normales no pueden ver ni modificar ponderaciones
         weightsBtn.style.display = 'none';
         weightsSection.classList.add('collapsed');
+    }
+}
+
+// ==================== GESTIÓN DE USUARIOS ====================
+// AGREGAR ESTE CÓDIGO AL FINAL DE TU script.js
+
+import { SUPER_ADMIN_UID } from './firebase-config.js';
+import { 
+    createUserWithEmailAndPassword,
+    deleteUser,
+    updateEmail,
+    updatePassword
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { 
+    doc, 
+    setDoc, 
+    getDoc,
+    updateDoc,
+    deleteDoc,
+    collection,
+    getDocs,
+    query,
+    where
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+let userRole = 'user'; // Puede ser: 'super_admin', 'admin', 'user'
+
+// Verificar rol del usuario al iniciar sesión
+async function checkUserRole(userId) {
+    try {
+        // El super admin siempre es admin
+        if (userId === SUPER_ADMIN_UID) {
+            userRole = 'super_admin';
+            isAdmin = true;
+            return 'super_admin';
+        }
+
+        // Buscar en la colección de roles
+        const roleDoc = await getDoc(doc(db, 'user_roles', userId));
+        
+        if (roleDoc.exists()) {
+            userRole = roleDoc.data().role || 'user';
+            isAdmin = (userRole === 'admin' || userRole === 'super_admin');
+            return userRole;
+        } else {
+            // Si no existe, crear como usuario normal
+            await setDoc(doc(db, 'user_roles', userId), {
+                role: 'user',
+                email: auth.currentUser.email,
+                createdAt: new Date()
+            });
+            userRole = 'user';
+            isAdmin = false;
+            return 'user';
+        }
+    } catch (error) {
+        console.error('Error al verificar rol:', error);
+        userRole = 'user';
+        isAdmin = false;
+        return 'user';
     }
 }

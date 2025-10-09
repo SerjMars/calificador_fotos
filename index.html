@@ -16,7 +16,6 @@
                 <input type="email" id="emailInput" placeholder="Correo electrónico">
                 <input type="password" id="passwordInput" placeholder="Contraseña">
                 <button onclick="login()" class="auth-btn">Iniciar Sesión</button>
-                <button onclick="register()" class="auth-btn secondary">Registrarse</button>
                 
                 <div class="divider">
                     <span>o</span>
@@ -33,7 +32,60 @@
         <div class="main-panel" id="mainPanel" style="display: none;">
             <div class="user-info">
                 <span id="userEmail"></span>
-                <button onclick="logout()" class="logout-btn">Cerrar Sesión</button>
+                <div class="user-actions">
+                    <button onclick="toggleUserManagement()" class="admin-btn" id="userManagementBtn" style="display: none;">
+                        👥 Gestión de Usuarios
+                    </button>
+                    <button onclick="logout()" class="logout-btn">Cerrar Sesión</button>
+                </div>
+            </div>
+
+            <!-- Panel de gestión de usuarios (solo admins) -->
+            <div class="user-management-panel collapsed" id="userManagementPanel">
+                <h2>Gestión de Usuarios</h2>
+                
+                <div class="management-tabs">
+                    <button class="tab-btn active" onclick="switchTab('users')">👥 Usuarios</button>
+                    <button class="tab-btn" onclick="switchTab('invitations')">✉️ Invitaciones</button>
+                </div>
+
+                <!-- Tab: Lista de usuarios -->
+                <div class="tab-content" id="tabUsers">
+                    <div class="users-list" id="usersList">
+                        <div class="loading">Cargando usuarios...</div>
+                    </div>
+                </div>
+
+                <!-- Tab: Crear invitaciones -->
+                <div class="tab-content" id="tabInvitations" style="display: none;">
+                    <div class="invitation-form">
+                        <h3>Crear Nueva Invitación</h3>
+                        <div class="form-group">
+                            <label>Email del usuario:</label>
+                            <input type="email" id="inviteEmail" placeholder="usuario@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Rol:</label>
+                            <select id="inviteRole">
+                                <option value="user">Usuario Normal</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña temporal:</label>
+                            <input type="text" id="invitePassword" placeholder="Mínimo 6 caracteres">
+                            <button onclick="generatePassword()" class="generate-btn">🎲 Generar</button>
+                        </div>
+                        <button onclick="createInvitation()" class="create-btn">Crear Invitación</button>
+                    </div>
+
+                    <div class="invitations-list">
+                        <h3>Invitaciones Pendientes</h3>
+                        <div id="invitationsList">
+                            <div class="loading">Cargando invitaciones...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="drop-zone" id="dropZone">
