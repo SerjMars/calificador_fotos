@@ -319,7 +319,7 @@ select:focus {
 }
 
 .toggle-switch.active {
-    background: #ec1c24;
+    background: #11BF1E;
 }
 
 .toggle-slider {
@@ -349,7 +349,7 @@ select:focus {
 }
 
 .toggle-switch.active + .toggle-label {
-    color: #ec1c24;
+    color: #11BF1E;
 }
 
 .auto-detected {
@@ -540,4 +540,473 @@ input[type="file"] {
     h1 {
         font-size: 2em;
     }
+}
+
+/* Estilos para autenticación */
+.auth-panel {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.auth-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.auth-content input {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    font-size: 0.9em;
+    color: #606060;
+}
+
+.auth-content input:focus {
+    outline: none;
+    border-color: #ec1c24;
+}
+
+.auth-btn {
+    padding: 12px 24px;
+    background: #ec1c24;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+}
+
+.auth-btn:hover {
+    background: #d01820;
+}
+
+.auth-btn.secondary {
+    background: white;
+    color: #606060;
+    border: 1px solid #e0e0e0;
+}
+
+.auth-btn.secondary:hover {
+    background: #f5f5f5;
+}
+
+.user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f8f8;
+    border-radius: 4px;
+    margin-bottom: 30px;
+    font-size: 0.9em;
+    color: #606060;
+}
+
+.logout-btn {
+    background: #ec1c24;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background: #d01820;
+}
+
+/* Botones de acción */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.save-btn, .history-btn {
+    background: #ec1c24;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    padding: 14px 28px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 400;
+    transition: all 0.3s;
+    letter-spacing: 0.5px;
+}
+
+.save-btn:hover, .history-btn:hover {
+    background: #d01820;
+    transform: translateY(-2px);
+}
+
+.save-btn:disabled {
+    background: #c0c0c0;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Panel de historial */
+.history-panel {
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 30px;
+    margin-top: 30px;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
+}
+
+.history-panel.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 30px;
+    border: none;
+}
+
+.history-panel h3 {
+    color: #606060;
+    margin-bottom: 20px;
+    font-weight: 400;
+    font-size: 1.2em;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filters input, .filters select {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    font-size: 0.9em;
+    color: #606060;
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-btn, .download-btn {
+    background: #606060;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover, .download-btn:hover {
+    background: #404040;
+}
+
+.sets-list {
+    display: grid;
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.set-item {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.set-item:hover {
+    border-color: #ec1c24;
+    transform: translateX(5px);
+}
+
+.set-info {
+    flex: 1;
+}
+
+.set-date {
+    font-size: 0.9em;
+    color: #606060;
+    margin-bottom: 5px;
+}
+
+.set-score {
+    font-size: 1.2em;
+    font-weight: 500;
+    color: #ec1c24;
+}
+
+.set-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.set-actions button {
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    background: white;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.3s;
+}
+
+.set-actions button:hover {
+    background: #ec1c24;
+    color: white;
+    border-color: #ec1c24;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #606060;
+}
+
+/* Badge de administrador */
+.admin-badge {
+    background: #ec1c24;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.auth-btn.tourist {
+    background: #606060;
+}
+
+.auth-btn.tourist:hover {
+    background: #404040;
+}
+
+.divider {
+    text-align: center;
+    margin: 10px 0;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+.divider span {
+    background: white;
+    padding: 0 10px;
+    color: #999;
+    font-size: 0.9em;
+}
+
+.tourist-info {
+    text-align: center;
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 5px;
+}
+
+.tourist-badge {
+    background: #606060;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.tourist-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+/* Parámetros compactos */
+.parameter.compact {
+    padding: 10px 20px;
+}
+
+.parameter.compact .parameter-header {
+    align-items: center;
+}
+
+.compact-select {
+    width: 160px !important;
+    min-width: 160px;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 400;
+    font-size: 0.85em;
+}
+
+/* Cuadrícula de toggles 2x2 */
+.parameter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 20px;
+    background: #f8f8f8;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Cuadrícula horizontal en pantallas grandes*/
+@media (min-width: 769px) {
+    .parameter-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+    }
+}
+
+.parameter-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    min-width: 90px;
+}
+
+.parameter-grid-item label {
+    font-size: 0.85em;
+    font-weight: 500;
+    color: #606060;
+    text-align: center;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.parameter-grid-item .toggle-switch {
+    width: 50px;
+    height: 26px;
+}
+
+.parameter-grid-item .toggle-slider {
+    width: 20px;
+    height: 20px;
+}
+
+.parameter-grid-item .toggle-switch.active .toggle-slider {
+    transform: translateX(24px);
+}
+
+.toggle-label-grid {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #c0c0c0;
+    letter-spacing: 0.5px;
+}
+
+.parameter-grid-item .toggle-switch.active + .toggle-label-grid {
+    color: #11BF1E;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .parameter-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .parameter-grid-item {
+        padding: 10px;
+    }
+}
+
+/* Toggle automático (no interactivo) */
+.toggle-switch.auto-toggle {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.toggle-switch.auto-toggle:hover {
+    opacity: 0.9;
+}
+
+.auto-badge-small {
+    font-size: 0.65em;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: -2px;
+}
+
+.parameter-grid-item.has-auto {
+    position: relative;
+}
+
+/* Toggles neutralizados - CORRECCIÓN APLICADA */
+.parameter-grid-item.neutralized {
+    opacity: 0.5;
+    position: relative;
+}
+
+.parameter-grid-item.neutralized .toggle-switch {
+    cursor: not-allowed;
+    opacity: 0.6;
+    background: #c0c0c0 !important; /* Forzar gris sin importar el estado */
+}
+
+.parameter-grid-item.neutralized .toggle-switch.active {
+    background: #c0c0c0 !important; /* Gris incluso si estaba activo */
+}
+
+.parameter-grid-item.neutralized .toggle-label-grid {
+    color: #999 !important; /* Label gris */
+}
+
+.neutralized-badge {
+    font-size: 0.65em;
+    color: #ec1c24;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+    text-align: center;
+    background: rgba(236, 28, 36, 0.1);
+    padding: 2px 6px;
+    border-radius: 2px;
 }
