@@ -19,7 +19,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Definir el administrador y turista
-const ADMIN_EMAIL = "admin@calificador.com"; // CAMBIA ESTO por tu email de admin
+const ADMIN_EMAIL = "maurer.sergio@gmail.com"; // CAMBIA ESTO por tu email de admin
 const TOURIST_MODE = "tourist"; // Identificador para modo turista
 
 // Exportar para usar en otros archivos
