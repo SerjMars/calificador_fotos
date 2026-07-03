@@ -1,0 +1,13 @@
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Claves de servicio (NUNCA subir al repo)
+*service-account*.json
+*serviceAccount*.json
+.env
+.env.*
+
+# Dependencias
+node_modules/

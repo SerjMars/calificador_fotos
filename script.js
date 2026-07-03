@@ -508,7 +508,7 @@ function setupDragAndDrop() {
 }
 
 // Comprimir imagen antes de convertir a Base64
-function compressImage(file, maxSizeKB = 400) {
+function compressImage(file, maxSizeKB = 200) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
